@@ -11,9 +11,9 @@ path = './test2.jpg' # kalo pake video atau image
 width = 1920
 height = 1080
 conf = 0.8 # 0.7-0.8 to be safe
-url = "http://127.0.0.1:8000/update_coords"  # ganti sesuai kebutuhan
+url = "http://localhost:8180/update_coords"  # ganti sesuai kebutuhan
 connection = 'usb' # usb or wifi or none
-serialAddress = '/dev/pts/5' # ganti sesuai kebutuhan, default /dev/ttyUSB0 for linux
+serialAddress = '/dev/pts/6' # ganti sesuai kebutuhan, default /dev/ttyUSB0 for linux
 
 # Initialize
 print(model.names)
