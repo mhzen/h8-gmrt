@@ -5,7 +5,7 @@ import serial
 
 # Variable config
 model = YOLO('./model/v4.pt')
-mode = 'image'  # 'image', 'video', 'webcam', 'webcam_image'
+mode = 'image' # 'image', 'video', 'webcam', 'webcam_image'
 path = './test2.jpg' # kalo pake video atau image
 width = 1920
 height = 1080
@@ -54,17 +54,26 @@ else:
 
 # Send coordinates via HTTP POST or serial
 # TODO: masukkin ke fungsi
-def send_with_http(x, y, width_box, height_box):
+def send(x, y, width_box, height_box):
     data = {"x": x, "y": y, "width": width_box, "height": height_box, "timestamp": time.time()}
     headers = {'Content-Type': 'application/json'}
-    try:
-        response = requests.post(url, json=data, headers=headers, timeout=5)
-        if response.status_code == 200:
-            print("Coordinates sent successfully")
-        else:
-            print(f"Failed to send coordinates, status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error sending coordinates: {e}")
+    if connection == 'usb':
+        try:
+            ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+            ser.write(f"{data}\n".encode())
+            ser.close()
+            print("Coordinates sent via USB")
+        except Exception as e:
+            print(f"Error sending coordinates via USB: {e}")
+    elif connection == 'wifi':
+        try:
+            response = requests.post(url, json=data, headers=headers, timeout=5)
+            if response.status_code == 200:
+                print("Coordinates sent successfully")
+            else:
+                print(f"Failed to send coordinates, status code: {response.status_code}")
+        except Exception as e:
+            print(f"Error sending coordinates: {e}")
 
 # x (relatif ke resolusi x webcam)
 # y (relatif ke resolusi y webcam)
@@ -85,7 +94,7 @@ if single_frame is not None:
             cv2.putText(single_frame, f"{cx},{cy}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
             # send coordinates for this detection
-            send_with_http(cx, cy, width, height)
+            send(cx, cy, width, height)
 
     if len(results) > 0:
         cv2.imshow("Image", results[0].plot())
@@ -112,7 +121,7 @@ else:
                 cv2.putText(frame, f"{cx},{cy}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
                 # send coordinates for this detection
-                send_with_http(cx, cy, width, height)
+                send(cx, cy, width, height)
 
         if len(results) > 0:
             cv2.imshow("Live Camera", results[0].plot())
